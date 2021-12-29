@@ -24,17 +24,16 @@ namespace GymAPI.Controllers
         [Route("api/Login")]
         public IHttpActionResult Login([FromBody]LoginDto loginDto)
         {
-            var Content = new APIContent();
-            var userDto = new UserDto();
+            var Content = new APIContent<AuthonticationResponse>();
             try
             {
-                var result = cUsers.Login(loginDto.UserName, loginDto.Password, out userDto);
+                var result = cUsers.Login(loginDto.UserName, loginDto.Password);
                 if (result.status == (int)ResultStatus.Success)
                 {
                     
                     Content.Status = (int)HttpStatusCode.OK;
                     Content.Message = ResultStatus.Success.ToString();
-                    Content.response.access_token = result.token;
+                    Content.response = result.token;
                     return Ok(Content);
                 }
                 if (result.status == (int)ResultStatus.InvalidUsernameOrPassword)

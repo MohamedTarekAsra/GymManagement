@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using GymAPI.Models;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -25,7 +26,7 @@ namespace GymAPI.Classes
 
         /// </summary>
         private const string Secret = "db3OIsj+BXE9NZDy0t8W3TcNekrF+2d/1sFnWG4HnV8TZY30iTOdtVWJG8abWvB1GlOgJuQZdcF2Luqm/hccMw==";
-        public static string GenerateToken(int ID, string username, int? UserType, string FirstName,string LastName, string Email, string MobileNumber, string ProfileImage,
+        public static AuthonticationResponse GenerateToken(int ID, string username, int? UserType, string FirstName,string LastName, string Email, string MobileNumber, string ProfileImage,
                                            int Status, int? Gender, int? GymId , string Address, int? TenantId, int expireMinutes = 60)
         {
             var symmetricKey = Convert.FromBase64String(Secret);
@@ -36,23 +37,20 @@ namespace GymAPI.Classes
             {
                 Subject = new ClaimsIdentity(
                     new[] {
-                        new Claim(ClaimTypes.Name, username)
+                        new Claim(ClaimTypes.Name, username),
+                        new Claim("Email",Email),
+                        new Claim("Gender", Gender.HasValue ? Gender.Value.ToString() : ""),
+                        new Claim( "MobilePhone", MobileNumber),
+                        new Claim("ID", ID.ToString()),
+                        new Claim("StreetAddress", string.IsNullOrEmpty(Address) ? "" :Address ),
+                        new Claim( "FirstName", FirstName),
+                        new Claim( "LastName", LastName),
+                        new Claim( "UserType", UserType.HasValue ? UserType.Value.ToString() : ""),
+                        new Claim( "Status", Status.ToString()),
+                        new Claim( "ProfileImage", string.IsNullOrEmpty(ProfileImage) ? "" : ProfileImage),
+                        new Claim( "GymId", GymId.HasValue ? GymId.Value.ToString() : ""),
+                        new Claim( "TenantId", TenantId.HasValue ? TenantId.Value.ToString() : ""),
                 }),
-                Claims = new Dictionary<string, object>()
-                {
-                    { "Email", Email},
-                    { "Gender",Gender},
-                    { "MobilePhone",MobileNumber},
-                    { "ID",ID},
-                    { "StreetAddress",Address},
-                    { "FirstName", FirstName},
-                    { "LastName",LastName},
-                    { "UserType",UserType},
-                    { "Status",Status},
-                    { "ProfileImage",ProfileImage},
-                    { "GymId",GymId},
-                    { "TenantId",TenantId},
-                },
                 //
                 Expires = now.AddMinutes(Convert.ToInt32(expireMinutes)),
                 //
@@ -62,7 +60,17 @@ namespace GymAPI.Classes
             var stoken = tokenHandler.CreateToken(tokenDescriptor);
             var token = tokenHandler.WriteToken(stoken);
             //
-            return token;
+            return new AuthonticationResponse() {  access_token = token, refresh_token = generateRefreshToken()};
+        }
+        private static string generateRefreshToken()
+        {
+            using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
+            {
+                var randomBytes = new byte[64];
+                rngCryptoServiceProvider.GetBytes(randomBytes);
+                return Convert.ToBase64String(randomBytes);
+                
+            }
         }
         public static bool CheckUser(string username, string password)
         {

@@ -5,18 +5,13 @@ using System.Web;
 
 namespace GymAPI.Models
 {
-    public class APIContent
+    public class APIContent<GeneralType>
     {
         public int Status { get; set; }
         public string Message { get; set; }
-        public Response response
-        {
-            get { return kresponse; }
-            set { kresponse = value; }
-        }
-        private Response kresponse = new Response();
+        public GeneralType response { get; set; }
     }
-    public class Response
+    public class AuthonticationResponse
     {
         public string access_token { get; set; }
         public Nullable<int> error { get; set; }

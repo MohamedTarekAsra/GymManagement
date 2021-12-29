@@ -25,7 +25,8 @@ namespace GymAPI.Migrations
             //    ChangePassowrdOnLogin = false,
             //    Email = "mohamed@gmail.com",
             //    MobileNumber = "+201092564672",
-            //    Status = 1, CreatedDate = DateTime.Now
+            //    Status = 1,
+            //    CreatedDate = DateTime.Now
             //});
         }
     }
