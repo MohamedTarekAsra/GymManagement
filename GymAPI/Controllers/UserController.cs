@@ -24,7 +24,7 @@ namespace GymAPI.Controllers
         [Route("api/Login")]
         public IHttpActionResult Login([FromBody]LoginDto loginDto)
         {
-            var Content = new APIContent<string>();
+            var Content = new APIContent();
             var userDto = new UserDto();
             try
             {
@@ -34,7 +34,7 @@ namespace GymAPI.Controllers
                     
                     Content.Status = (int)HttpStatusCode.OK;
                     Content.Message = ResultStatus.Success.ToString();
-                    Content.response.ktoken = result.token;
+                    Content.response.access_token = result.token;
                     return Ok(Content);
                 }
                 if (result.status == (int)ResultStatus.InvalidUsernameOrPassword)
@@ -55,9 +55,7 @@ namespace GymAPI.Controllers
                 // if internal server error heppened
                 Content.Status = (int)HttpStatusCode.InternalServerError;
                 Content.Message = ex.Message;
-                Content.response.ktoken = "";
                 cGeneral.ExceptionLog(-1, ex);
-                
             }
             return Ok(Content);
         }
