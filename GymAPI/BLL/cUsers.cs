@@ -13,45 +13,31 @@ namespace GymAPI.BLL
 {
     public class cUsers
     {
-        public static (int status, AuthonticationResponse token) Login(string userName, string password)
+        public static (int status, AuthonticationResponse response) Login(string userName, string password)
         {
             try
             {
-                AuthonticationResponse newToken;
+                AuthonticationResponse response;
                 using (var db = new GymDbContext())
                 {
-                    //check if username is exists
-                    bool isUserValid = db.Users.Any(user => user.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase) && user.Status != (int)UserStatus.Deleted);
-                    if (isUserValid)
+                    var decPassword = APICrypto.encrypt(password);
+                    var userDetails = db.Users.FirstOrDefault(user => user.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase) 
+                                                           && user.Password.Equals(decPassword));
+                    if (userDetails != null)
                     {
-                        var decPassword = APICrypto.encrypt(password);
-                        var userDetails = db.Users.FirstOrDefault(user => user.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase) && user.Password.Equals(decPassword) && user.Status != (int)UserStatus.Deleted);
-                        if (userDetails != null)
+                        if (userDetails.Status == (int)UserStatus.Active)
                         {
-                            // check if user is active
-                            if (userDetails.Status == (int)UserStatus.Active)
-                            {
-                                int tokenExpiration = int.Parse(ConfigurationManager.AppSettings["TokenExpiration"]);
-                                int refreshTokenExpiration = int.Parse(ConfigurationManager.AppSettings["RefreshTokenExpiration"]);
+                            int tokenExpiration = int.Parse(ConfigurationManager.AppSettings["TokenExpiration"]);
+                            int refreshTokenExpiration = int.Parse(ConfigurationManager.AppSettings["RefreshTokenExpiration"]);
 
-                                newToken = TokenManager.GenerateToken(userDetails.ID, userDetails.UserName, userDetails.UserType, userDetails.FirstName, userDetails.LastName, 
-                                                               userDetails.Email, userDetails.MobileNumber, userDetails.ProfileImage, userDetails.Status, userDetails.Gender,
-                                                               userDetails.GymId, userDetails.Address, userDetails.TenantId, tokenExpiration);
-
-                               
-                                return ((int)ResultStatus.Success, newToken);
-                            }
+                            response = TokenManager.GetAuthonticationResponse(userDetails.ID, userDetails.UserName, userDetails.UserType, userDetails.FirstName, userDetails.LastName,
+                                                           userDetails.Email, userDetails.MobileNumber, userDetails.ProfileImage, userDetails.Status, userDetails.Gender,
+                                                           userDetails.GymId, userDetails.Address, userDetails.TenantId, tokenExpiration);
+                            return ((int)UserStatus.Active, response);// login success
                         }
-
-                        int attempts = int.Parse(ConfigurationManager.AppSettings["MaxFailedLoginAttempts"]);
-                        int blockMinutes = int.Parse(ConfigurationManager.AppSettings["BlockMinutes"]);
-                        if (userDetails.LastLoginFailedDate.HasValue && DateTime.Now >= userDetails.LastLoginFailedDate.Value.AddMinutes(blockMinutes))
-                        {
-                        }
-
-                        return ((int)ResultStatus.InvalidUsernameOrPassword, null);
+                        return (userDetails.Status, null);// acount deleted or inactive
                     }
-                    return ((int)ResultStatus.InvalidUsernameOrPassword, null);
+                    return ((int)UserStatus.NotFound, null);// username or password is invalid
                 }
             }
             catch (Exception ex)
@@ -61,6 +47,6 @@ namespace GymAPI.BLL
             }
         }
 
-       
+
     }
 }

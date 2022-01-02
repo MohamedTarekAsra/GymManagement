@@ -17,7 +17,7 @@ using GymAPI.Models;
 
 namespace GymAPI.Controllers
 {
-    public class UserController : ApiController
+    public class LoginController : ApiController
     {
         
         [HttpPost]
@@ -28,26 +28,39 @@ namespace GymAPI.Controllers
             try
             {
                 var result = cUsers.Login(loginDto.UserName, loginDto.Password);
-                if (result.status == (int)ResultStatus.Success)
+                // check user status
+                // if user active generate token and return success
+                if (result.status == (int)UserStatus.Active)
                 {
-                    
                     Content.Status = (int)HttpStatusCode.OK;
                     Content.Message = ResultStatus.Success.ToString();
-                    Content.response = result.token;
-                    return Ok(Content);
+                    Content.response = result.response;
                 }
-                if (result.status == (int)ResultStatus.InvalidUsernameOrPassword)
+                // invalid username or password
+                if (result.status == (int)UserStatus.NotFound)
                 {
                     Content.Status = (int)HttpStatusCode.Unauthorized;
-                    Content.Message = ResultStatus.Unauthorized.ToString();
-                    return Ok(Content);
+                    Content.Message = ResultStatus.InvalidUsernameOrPassword.ToString();
                 }
+                // account deleted
+                if (result.status == (int)UserStatus.Deleted)
+                {
+                    Content.Status = (int)HttpStatusCode.Unauthorized;
+                    Content.Message = ResultStatus.Deleted.ToString();
+                }
+                // user is inactive
+                if (result.status == (int)UserStatus.Inactive)
+                {
+                    Content.Status = (int)HttpStatusCode.Unauthorized;
+                    Content.Message = ResultStatus.Inactive.ToString();
+                }
+                // exception
                 if (result.status == (int)ResultStatus.Exception)
                 {
                     Content.Status = (int)HttpStatusCode.InternalServerError;
-                    Content.Message = ResultStatus.InternalServerError.ToString();
-                    return Ok(Content);
+                    Content.Message = ResultStatus.Exception.ToString();
                 }
+                return Ok(Content);
             }
             catch (Exception ex)
             {

@@ -181,7 +181,7 @@
     <Compile Include="Classes\APICrypto.cs" />
     <Compile Include="Classes\TokenManager.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\UserController.cs" />
+    <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="DTOs\LoginDto.cs" />
     <Compile Include="DTOs\UserDto.cs" />

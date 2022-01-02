@@ -7,12 +7,13 @@ namespace GymAPI.Enums
 {
     public enum ResultStatus
     {
-        Success = 1,
-        Failed = -1,
-        Exception = -2,
-        InvalidUsernameOrPassword = -3,
+        Success = 200,
+        Unauthorized = 401,
         //
-        InternalServerError = 500,
-        Unauthorized = 401
+        Inactive = 0,
+        Deleted = -1,
+        InvalidUsernameOrPassword = -2,
+        Exception = -999
+
     }
 }

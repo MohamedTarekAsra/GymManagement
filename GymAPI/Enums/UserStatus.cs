@@ -7,6 +7,9 @@ namespace GymAPI.Enums
 {
     public enum UserStatus
     {
-        Active = 1, Inactive = 0, Deleted = -1
+        Active = 1,
+        Inactive = 0,
+        Deleted = -1,
+        NotFound = -2
     }
 }
